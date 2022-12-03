@@ -55,10 +55,10 @@ Project Link: [https://github.com/SpinStabilized/tidbyt-earthquakemap_dev][repos
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-[repository-issues]: [https://github.com/SpinStabilized/tidbyt-earthquakemap_dev/issues]
-[repository-url]: [https://github.com/SpinStabilized/tidbyt-earthquakemap_dev]
-[python-pillow-url]: [https://python-pillow.org/]
-[tidbyt-community-url]: [https://tidbyt.dev/docs/engage/community]
+[repository-issues]: https://github.com/SpinStabilized/tidbyt-earthquakemap_dev/issues
+[repository-url]: https://github.com/SpinStabilized/tidbyt-earthquakemap_dev
+[python-pillow-url]: https://python-pillow.org/
+[tidbyt-community-url]: https://tidbyt.dev/docs/engage/community
 [tidbyt-url]: https://tidbyt.com/
 [tidbyt-dev-url]: https://tidbyt.dev/
 [tidbyt-lic-url]: https://github.com/tidbyt/community/blob/main/docs/CLA.md
