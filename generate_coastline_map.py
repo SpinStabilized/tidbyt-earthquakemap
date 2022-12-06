@@ -7,12 +7,23 @@ from PIL import Image, ImageDraw
 import json
 import math
 
-coastline_map = 'earth-coastlines-10km.geo.json'
+coastline_map = 'data/earth-coastlines-10km.geo.json'
 
-def web_mercator(coordinates, screen_width=64, screen_height=32):
+def map_projection(longitude, latitude, screen_width=64, screen_height=32):
+    """Project's a map longitude/latitude to screen coordinates.
+
+    Args:
+        longitude: A map coordinate longitude
+        latitude: A map coordinate latitude
+        screen_width: size of the screen/image to project to
+        screen_height: height of the screen/image to project to
+
+    Returns:
+        An (x, y) tuple in the screen/image pixel coordinates
+    """
     radius = screen_width / (2 * math.pi)
-    longitude_radians = math.radians(coordinates[0] + 180)
-    latitude_radians = math.radians(coordinates[1])
+    longitude_radians = math.radians(longitude + 180)
+    latitude_radians = math.radians(latitude)
 
     x = longitude_radians * radius
     y_from_eq = radius * math.log(math.tan(math.pi / 4 + latitude_radians / 2))
@@ -29,7 +40,7 @@ def main():
     map_drawing = ImageDraw.Draw(map_image)
 
     for polygon in coastline_geometries:
-        scaled_points = [web_mercator(c) for c in polygon[0]]
+        scaled_points = [map_projection(c[0], c[1]) for c in polygon[0]]
         if len(set(scaled_points)) > 20:
             map_drawing.polygon(scaled_points, outline=(64,64,64))
 
