@@ -113,23 +113,18 @@ def duration_calc(time_filter, units = None):
     Returns:
        (number) The input time in seconds.
     """
-    valid_units = ["days", "hours", "minutes", "seconds"]
-    if time_filter == None:
-        time_filter = 1
-    if units == None or units not in valid_units:
+    conversion_dict = {
+        'seconds': 1,
+        'minutes': 60,
+        'hours': 60 * 60,
+        'days': 60 * 60 * 24,
+    }
+
+    if units == None or units not in conversion_dict.keys():
         units = "minutes"
 
-    in_seconds = 0
-    if units == "seconds":
-        in_seconds = time_filter
-    elif units == "minutes":
-        in_seconds = time_filter * 60
-    elif units == "hours":
-        in_seconds = time_filter * 60 * 60
-    elif units == "days":
-        in_seconds = time_filter * 60 * 60 * 24
+    return time_filter * conversion_dict[units]
 
-    return in_seconds
 
 #-------------------------------------------------------------------------------
 # Map Utility Functions
