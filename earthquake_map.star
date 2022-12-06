@@ -26,12 +26,12 @@ DEFAULT_HIDE_WHEN_EMPTY = False
 DEFAULT_MAP_CENTER_ID = "Prime Meridian"
 DEFAULT_USER_LOCATION = """
 {
-	'lat': '40.6781784',
-	'lng': '-73.9441579',
-	'description': 'Brooklyn, NY, USA',
-	'locality': 'Brooklyn',
-	'place_id': 'ChIJCSF8lBZEwokRhngABHRcdoI',
-	'timezone': 'America/New_York'
+	"lat": "40.6781784",
+	"lng": "-73.9441579",
+	"description": "Brooklyn, NY, USA",
+	"locality": "Brooklyn",
+	"place_id": "ChIJCSF8lBZEwokRhngABHRcdoI",
+	"timezone": "America/New_York"
 }
 """
 
@@ -273,14 +273,14 @@ def main(config):
 
     time_filter = duration_calc(time_filter_duration, time_filter_units)
 
-    if map_center_id == "Prime Meridian":
+    if map_center_id == 'Prime Meridian':
         map_center = 0
-    elif map_center_id == "Date Line":
+    elif map_center_id == 'Date Line':
         map_center = -180
-    elif map_center_id == "Tidbyt Location":
-        map_center = user_location
+    elif map_center_id == 'Tidbyt Location':
+        map_center = int(float(json.decode(user_location)['lng']))
     else:
-        map_center = json.decode(user_location)["lng"]
+        map_center = 0
 
     # Process the earthquakes and generate render data
     earthquake_events = get_usgs_data(
@@ -304,7 +304,7 @@ def main(config):
         )
     elif not hide_when_empty:
         return render.Root(
-            child = render_map(WORLD_MAP_ARRAY),
+            child = render_map(WORLD_MAP_ARRAY, map_center),
         )
     else:
         return []
