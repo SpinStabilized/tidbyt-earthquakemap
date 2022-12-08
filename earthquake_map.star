@@ -34,6 +34,11 @@ DEFAULT_USER_LOCATION = """
 	"timezone": "America/New_York"
 }
 """
+DEFAULT_INCLUDE_EARTHQUAKE = True
+DEFAULT_INCLUDE_ICEQUAKE = True
+DEFAULT_INCLUDE_QUARRY = True
+DEFAULT_INCLUDE_EXPLOSION = True
+DEFAULT_INCLUDE_OTHER = True
 
 HTTP_STATUS_OK = 200
 
@@ -45,7 +50,7 @@ EARTHQUAKES_LAST_30_DAYS_URL = "https://earthquake.usgs.gov/earthquakes/feed/v1.
 # USGS API Functions
 #-------------------------------------------------------------------------------
 
-def get_usgs_data(magnitude_filter = None, time_filter = None):
+def get_usgs_data(magnitude_filter = None, time_filter = None, type_filter = None):
     """Retrieve GeoJSON earthquake data from the USGS.
 
     Retrieve all earthquake data in GeoJSON format from the las 30 days and
@@ -60,6 +65,7 @@ def get_usgs_data(magnitude_filter = None, time_filter = None):
        magnitude_filter (number): The lower-bound magnitude to display.
        time_filter (number): Time period in seconds from the current time to
        display.
+       type_filter (dict): Filter on various types of events
 
     Returns:
        A list of earthquake events in the following format -
@@ -97,7 +103,8 @@ def get_usgs_data(magnitude_filter = None, time_filter = None):
             ]
 
             if new_event[1] >= magnitude_filter and \
-               current_time - new_event[2] <= time_filter:
+               current_time - new_event[2] <= time_filter and \
+               (type_filter == None or type_filter[event["properties"]["type"]]):
                 events.append(new_event)
 
     events = sorted(events, key = lambda item: item[1])
@@ -269,6 +276,13 @@ def main(config):
     hide_when_empty = config.bool("hide_when_empty") or DEFAULT_HIDE_WHEN_EMPTY
     map_center_id = config.str("map_center_id") or DEFAULT_MAP_CENTER_ID
     user_location = config.str("user_location") or DEFAULT_USER_LOCATION
+    type_filter = {
+        "earthquake": config.bool("include_earthquake", DEFAULT_INCLUDE_EARTHQUAKE),
+        "ice quake": config.bool("include_icequake", DEFAULT_INCLUDE_ICEQUAKE),
+        "quarry blast": config.bool("include_quarry", DEFAULT_INCLUDE_QUARRY),
+        "explosion": config.bool("include_explosion", DEFAULT_INCLUDE_EXPLOSION),
+        "other event": config.bool("include_other", DEFAULT_INCLUDE_OTHER),
+    }
 
     time_filter = duration_calc(time_filter_duration, time_filter_units)
 
@@ -285,6 +299,7 @@ def main(config):
     earthquake_events = get_usgs_data(
         magnitude_filter = magnitude_filter,
         time_filter = time_filter,
+        type_filter = type_filter,
     )
 
     if earthquake_events:
@@ -379,6 +394,42 @@ def get_schema():
                 desc = "Location to select the map central meridian.",
                 icon = "locationDot",
             ),
+            schema.Toggle(
+                id = "include_earthquake",
+                name = "Include Earthquakes",
+                desc = "Include earthquake events in display.",
+                icon = "houseCrack",
+                default = True,
+            ),
+            schema.Toggle(
+                id = "include_icequake",
+                name = "Include Ice Quakes",
+                desc = "Include ice quake events in display. (US Only)",
+                icon = "icicles",
+                default = True,
+            ),
+            schema.Toggle(
+                id = "include_quarry",
+                name = "Include Quarry Blasts",
+                desc = "Include quarry blasting events in display. (US Only)",
+                icon = "hillRockslide",
+                default = True,
+            ),
+            schema.Toggle(
+                id = "include_explosion",
+                name = "Include Explosions",
+                desc = "Include explosion events in display. (US Only)",
+                icon = "explosion",
+                default = True,
+            ),
+            schema.Toggle(
+                id = "include_other",
+                name = "Include Other Events",
+                desc = "Include other, unspecified, events in display. (US Only)",
+                icon = "question",
+                default = True,
+            )
+
         ],
     )
 
