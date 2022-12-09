@@ -376,24 +376,6 @@ def get_schema():
                 ],
                 default = "days",
             ),
-            schema.Dropdown(
-                id = "map_center_id",
-                name = "Map Center",
-                desc = "The meridian at the center of the map.",
-                icon = "compass",
-                options = [
-                    schema.Option(display = "Prime Merdian", value = "Prime Meridian"),
-                    schema.Option(display = "Date Line", value = "Date Line"),
-                    schema.Option(display = "Tidbyt Location", value = "Tidbyt Location"),
-                ],
-                default = "Prime Meridian",
-            ),
-            schema.Location(
-                id = "location",
-                name = "Location",
-                desc = "Location to select the map central meridian.",
-                icon = "locationDot",
-            ),
             schema.Toggle(
                 id = "include_earthquake",
                 name = "Include Earthquakes",
@@ -428,10 +410,39 @@ def get_schema():
                 desc = "Include other, unspecified, events in display. (US Only)",
                 icon = "question",
                 default = True,
-            )
-
+            ),
+            schema.Dropdown(
+                id = "map_center_id",
+                name = "Map Center",
+                desc = "The meridian at the center of the map.",
+                icon = "compass",
+                options = [
+                    schema.Option(display = "Prime Merdian", value = "Prime Meridian"),
+                    schema.Option(display = "Date Line", value = "Date Line"),
+                    schema.Option(display = "Tidbyt Location", value = "Tidbyt Location"),
+                ],
+                default = "Prime Meridian",
+            ),
+            schema.Generated(
+                id = "location_option",
+                source = "map_center_id",
+                handler = schema_location
+            ),
         ],
     )
+
+def schema_location(map_center_id):
+    if map_center_id == "Tidbyt Location":
+        return [
+            schema.Location(
+                id = "location",
+                name = "Location",
+                desc = "Location to select the map central meridian.",
+                icon = "locationDot",
+            )
+        ]
+    else:
+        return []
 
 #------------------------------------------------------------------------------
 # Resources
