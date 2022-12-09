@@ -61,13 +61,27 @@ def uint8_to_hex(uint8, add_prefix = False):
     Args:
         uint8: 8-bit, unsigned, integer
         add_prefix: Boolean to indicate if "0x" should be prepended to the result.
-    
+
     Returns:
         Hex string representation of the input.
     """
     hex_numerals = [
-        "0", "1", "2", "3", "4", "5", "6", "7",
-        "8", "9", "A", "B", "C", "D", "E", "F",
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
     ]
     hex_string = "0x" if add_prefix else ""
     hex_string = hex_string + hex_numerals[(uint8 & 0xf0) >> 4]
@@ -128,7 +142,7 @@ def get_usgs_data(magnitude_filter = None, time_filter = None, type_filter = Non
                 ),
                 float(event["properties"]["mag"]),
                 time.from_timestamp(int(event["properties"]["time"] // 1000)),  # convert from ms to seconds
-                event["properties"]["type"]
+                event["properties"]["type"],
             ]
 
             if new_event[1] >= magnitude_filter and \
@@ -258,7 +272,7 @@ def pixel_shift(x, center_longitude = 0):
 # Render Utility Functions
 #-------------------------------------------------------------------------------
 
-def pixel(x, y, color, alpha=1.0):
+def pixel(x, y, color, alpha = 1.0):
     """Pixel by pixel drawing for Tidbyt
 
     Accepts a pixel coordinate as x and y integers on the Tidbyt display as well
@@ -314,15 +328,16 @@ def blink_pixel(x, y, color):
     Returns:
         A `render.Animation` object for the pixel location
     """
-    if len(color) == 5: color = color[:-1]
-    if len(color) == 9: color = color[:-2]
+    if len(color) == 5:
+        color = color[:-1]
+    if len(color) == 9:
+        color = color[:-2]
     alpha_range = [i / 100 for i in range(0, 100, 1)] + [i / 100 for i in range(99, 1, -1)]
-    blink_pixel = [pixel(3, 4, color, alpha=i) for i in alpha_range]
+    blink_pixel = [pixel(3, 4, color, alpha = i) for i in alpha_range]
 
     return render.Animation(
-            children = blink_pixel
+        children = blink_pixel,
     )
-
 
 #-------------------------------------------------------------------------------
 # Main
@@ -386,9 +401,10 @@ def main(config):
         last_event = earthquake_events[-1]
         x, y = map_projection(last_event[0][0], last_event[0][1])
         x = pixel_shift(x, map_center)
+
         # print(x, y)
         render_stack.append(
-            blink_pixel(x, y, mag_to_color(last_event[1]))
+            blink_pixel(x, y, mag_to_color(last_event[1])),
         )
 
         return render.Root(
@@ -537,7 +553,7 @@ def get_schema():
             schema.Generated(
                 id = "location_option",
                 source = "map_center_id",
-                handler = schema_location
+                handler = schema_location,
             ),
         ],
     )
@@ -550,7 +566,7 @@ def schema_location(map_center_id):
                 name = "Location",
                 desc = "Location to select the map central meridian.",
                 icon = "locationDot",
-            )
+            ),
         ]
     else:
         return []
