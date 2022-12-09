@@ -332,8 +332,9 @@ def blink_pixel(x, y, color):
         color = color[:-1]
     if len(color) == 9:
         color = color[:-2]
-    alpha_range = [i / 100 for i in range(0, 100, 1)] + [i / 100 for i in range(99, 1, -1)]
-    blink_pixel = [pixel(3, 4, color, alpha = i) for i in alpha_range]
+    # alpha_range = [i / 100 for i in range(0, 100, 10)] + [i / 100 for i in range(99, 1, -10)]
+    alpha_range = [0, 100]
+    blink_pixel = [pixel(x, y, color, alpha = i) for i in alpha_range]
 
     return render.Animation(
         children = blink_pixel,
@@ -401,14 +402,12 @@ def main(config):
         last_event = earthquake_events[-1]
         x, y = map_projection(last_event[0][0], last_event[0][1])
         x = pixel_shift(x, map_center)
-
-        # print(x, y)
         render_stack.append(
             blink_pixel(x, y, mag_to_color(last_event[1])),
         )
 
         return render.Root(
-            delay = 1,
+            delay = 500,
             child = render.Stack(
                 children = render_stack,
             ),
