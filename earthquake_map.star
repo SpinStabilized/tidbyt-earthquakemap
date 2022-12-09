@@ -19,7 +19,7 @@ load("time.star", "time")
 
 # The following DEFAULT_ configurations are strings for compatibility with the
 # `config` and `schema` libraries.
-DEFAULT_MAG_FILTER = "1"
+DEFAULT_MAG_FILTER = "4"
 DEFAULT_TIME_FILTER_DURATION = "1"
 DEFAULT_TIME_FILTER_UNITS = "days"
 DEFAULT_HIDE_WHEN_EMPTY = False
@@ -128,14 +128,15 @@ def get_usgs_data(magnitude_filter = None, time_filter = None, type_filter = Non
                 ),
                 float(event["properties"]["mag"]),
                 time.from_timestamp(int(event["properties"]["time"] // 1000)),  # convert from ms to seconds
+                event["properties"]["type"]
             ]
 
             if new_event[1] >= magnitude_filter and \
                current_time - new_event[2] <= time_filter and \
-               (type_filter == None or type_filter[event["properties"]["type"]]):
+               (type_filter == None or type_filter[new_event[3]]):
                 events.append(new_event)
 
-    events = sorted(events, key = lambda item: item[1])
+    events = sorted(events, key = lambda item: item[2])
     return events
 
 def duration_calc(time_filter, units = None):
@@ -179,14 +180,14 @@ def mag_to_color(magnitude):
         A string RGB 16 bit hex color code of the format #rrggbb
     """
     color_map = [
-        "#ffffff",  # Mag 0, White
-        "#330044",  # Mag 1, Violet
-        "#220066",  # Mag 2, Indigo
-        "#1133cc",  # Mag 3, Blue
-        "#33dd00",  # Mag 4, Green
-        "#ffda21",  # Mag 5, Yellow
-        "#ff6622",  # Mag 6, Orange
-        "#d10000",  # Mag 7+, Red
+        "#00b5b8",  # Mag 0, Teal
+        "#bf40bf",  # Mag 1, Purple
+        "#08e8de",  # Mag 2, Light Blue
+        "#0000ff",  # Mag 3, Blue
+        "#00ff00",  # Mag 4, Green
+        "#fff000",  # Mag 5, Yellow
+        "#ffaa1d",  # Mag 6, Orange
+        "#ff0000",  # Mag 7+, Red
     ]
     int_mag = len(color_map) - 1 if magnitude >= len(color_map) else int(magnitude)
     return color_map[int_mag]
@@ -289,6 +290,40 @@ def pixel(x, y, color, alpha=1.0):
         child = render.Box(width = 1, height = 1, color = color),
     )
 
+def blink_pixel(x, y, color):
+    """Pixel by pixel drawing for Tidbyt, a blinking pixel
+
+    Accepts a pixel coordinate as x and y integers on the Tidbyt display as well
+    as a color definition and provides a `render.Padding` object back to be used
+    in rendering. The color definition uses the Tidbyt color specifications
+    #rgb and #rrggbb. If a color has an alpha, the alpha will be ignored.
+
+    This is based on the work of Tidbyt Discuss user kay where they developed
+    some amazing spirte based demos for the Tidbyt:
+
+    https://discuss.tidbyt.com/t/animating-with-sprites/978
+
+    Note: If the color provided is suspected of having an alpha already defined,
+    the value of the alpha parameter to the function is ignored.
+
+    Args:
+        x: Tidbyt display x position [0...63]
+        y: Tidbyt display x position [0...31]
+        color: Hex color value
+
+    Returns:
+        A `render.Animation` object for the pixel location
+    """
+    if len(color) == 5: color = color[:-1]
+    if len(color) == 9: color = color[:-2]
+    alpha_range = [i / 100 for i in range(0, 100, 1)] + [i / 100 for i in range(99, 1, -1)]
+    blink_pixel = [pixel(3, 4, color, alpha=i) for i in alpha_range]
+
+    return render.Animation(
+            children = blink_pixel
+    )
+
+
 #-------------------------------------------------------------------------------
 # Main
 #-------------------------------------------------------------------------------
@@ -340,14 +375,24 @@ def main(config):
 
     if earthquake_events:
         render_stack = [render_map(WORLD_MAP_ARRAY, map_center, map_brightness)]
-        for event in earthquake_events:
-            x, y = map_projection(event[0][0], event[0][1])
-            x = pixel_shift(x, map_center)
-            render_stack.append(
-                pixel(x, y, mag_to_color(event[1])),
-            )
+        if len(earthquake_events) > 1:
+            for event in earthquake_events[:-1]:
+                x, y = map_projection(event[0][0], event[0][1])
+                x = pixel_shift(x, map_center)
+                render_stack.append(
+                    pixel(x, y, mag_to_color(event[1])),
+                )
+
+        last_event = earthquake_events[-1]
+        x, y = map_projection(last_event[0][0], last_event[0][1])
+        x = pixel_shift(x, map_center)
+        # print(x, y)
+        render_stack.append(
+            blink_pixel(x, y, mag_to_color(last_event[1]))
+        )
 
         return render.Root(
+            delay = 1,
             child = render.Stack(
                 children = render_stack,
             ),
