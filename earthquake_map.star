@@ -39,12 +39,40 @@ DEFAULT_INCLUDE_ICEQUAKE = True
 DEFAULT_INCLUDE_QUARRY = True
 DEFAULT_INCLUDE_EXPLOSION = True
 DEFAULT_INCLUDE_OTHER = True
+DEFAULT_MAP_BRIGHTNESS = "0.25"
 
 HTTP_STATUS_OK = 200
 
 API_CACHE_TTL = 60  # seconds
 
 EARTHQUAKES_LAST_30_DAYS_URL = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_month.geojson"
+
+#-------------------------------------------------------------------------------
+# Utility Functions
+#-------------------------------------------------------------------------------
+def uint8_to_hex(uint8, add_prefix = False):
+    """Take an integer value and return a hex string.
+
+    Given an 8 bit unsigned integer, convert the value to a hex string. If the
+    given value is not an unisgned integer, no guarantee is given of the
+    returned value. If the integer is larger than 255 (8-bits), only the hex
+    value of the lower 8-bits will be returned.
+
+    Args:
+        uint8: 8-bit, unsigned, integer
+        add_prefix: Boolean to indicate if "0x" should be prepended to the result.
+    
+    Returns:
+        Hex string representation of the input.
+    """
+    hex_numerals = [
+        "0", "1", "2", "3", "4", "5", "6", "7",
+        "8", "9", "A", "B", "C", "D", "E", "F",
+    ]
+    hex_string = "0x" if add_prefix else ""
+    hex_string = hex_string + hex_numerals[(uint8 & 0xf0) >> 4]
+    hex_string = hex_string + hex_numerals[uint8 & 0xf]
+    return hex_string
 
 #-------------------------------------------------------------------------------
 # USGS API Functions
@@ -184,12 +212,13 @@ def map_projection(longitude, latitude, screen_width = 64, screen_height = 32):
     y = screen_height / 2 - y_from_eq
     return int(x), int(y)
 
-def render_map(map_array, map_center = 0):
+def render_map(map_array, map_center = 0, brightness = 0.25):
     """Shift pixels to account for map central merdian.
 
     Args:
         map_array: 2-dimensional array indicating coastlines
         map_center: Map center meridian
+        brightness: Brightness of the map [0...255], default 25% (0.25)
 
     Returns:
         A `render.Stack` of pixels that represent the map.
@@ -200,7 +229,7 @@ def render_map(map_array, map_center = 0):
             if map_pixel:
                 x = pixel_shift(x, map_center)
                 map_stack.append(
-                    pixel(x, y, "#404040"),
+                    pixel(x, y, "#FFFFFF", brightness),
                 )
     return render.Stack(children = map_stack)
 
@@ -228,7 +257,7 @@ def pixel_shift(x, center_longitude = 0):
 # Render Utility Functions
 #-------------------------------------------------------------------------------
 
-def pixel(x, y, color):
+def pixel(x, y, color, alpha=1.0):
     """Pixel by pixel drawing for Tidbyt
 
     Accepts a pixel coordinate as x and y integers on the Tidbyt display as well
@@ -237,18 +266,24 @@ def pixel(x, y, color):
     #rrggbb, #rgba, and #rrggbbaa.
 
     This is based on the work of Tidbyt Discuss user kay where they developed
-    some amazing spire based demos for the Tidbyt:
+    some amazing spirte based demos for the Tidbyt:
 
     https://discuss.tidbyt.com/t/animating-with-sprites/978
+
+    Note: If the color provided is suspected of having an alpha already defined,
+    the value of the alpha parameter to the function is ignored.
 
     Args:
         x: Tidbyt display x position [0...63]
         y: Tidbyt display x position [0...31]
-        color: foo
+        color: Hex color value
+        alpha: Decimal percentage of full brightness [0...1]
 
     Returns:
         A `render.Padding` object for the pixel location
     """
+    if len(color) != 5 and len(color) != 9:
+        color = color + uint8_to_hex(int(alpha * 255))
     return render.Padding(
         pad = (x, y, 0, 0),
         child = render.Box(width = 1, height = 1, color = color),
@@ -270,12 +305,12 @@ def main(config):
 
     # Define configuration, use defaults if a configuration parameter can't be
     # found.
-    magnitude_filter = int(config.str("mag_filter") or DEFAULT_MAG_FILTER)
-    time_filter_duration = int(config.get("time_filter_duration") or DEFAULT_TIME_FILTER_DURATION)
-    time_filter_units = config.get("time_filter_units") or DEFAULT_TIME_FILTER_UNITS
-    hide_when_empty = config.bool("hide_when_empty") or DEFAULT_HIDE_WHEN_EMPTY
-    map_center_id = config.str("map_center_id") or DEFAULT_MAP_CENTER_ID
-    user_location = config.str("location") or DEFAULT_USER_LOCATION
+    magnitude_filter = int(config.str("mag_filter", DEFAULT_MAG_FILTER))
+    time_filter_duration = int(config.get("time_filter_duration", DEFAULT_TIME_FILTER_DURATION))
+    time_filter_units = config.get("time_filter_units", DEFAULT_TIME_FILTER_UNITS)
+    hide_when_empty = config.bool("hide_when_empty", DEFAULT_HIDE_WHEN_EMPTY)
+    map_center_id = config.str("map_center_id", DEFAULT_MAP_CENTER_ID)
+    user_location = config.str("location", DEFAULT_USER_LOCATION)
     type_filter = {
         "earthquake": config.bool("include_earthquake", DEFAULT_INCLUDE_EARTHQUAKE),
         "ice quake": config.bool("include_icequake", DEFAULT_INCLUDE_ICEQUAKE),
@@ -283,6 +318,7 @@ def main(config):
         "explosion": config.bool("include_explosion", DEFAULT_INCLUDE_EXPLOSION),
         "other event": config.bool("include_other", DEFAULT_INCLUDE_OTHER),
     }
+    map_brightness = float(config.get("map_brightness", DEFAULT_MAP_BRIGHTNESS))
 
     time_filter = duration_calc(time_filter_duration, time_filter_units)
 
@@ -303,7 +339,7 @@ def main(config):
     )
 
     if earthquake_events:
-        render_stack = [render_map(WORLD_MAP_ARRAY, map_center)]
+        render_stack = [render_map(WORLD_MAP_ARRAY, map_center, map_brightness)]
         for event in earthquake_events:
             x, y = map_projection(event[0][0], event[0][1])
             x = pixel_shift(x, map_center)
@@ -337,7 +373,37 @@ def get_schema():
                 name = "Hide When Empty",
                 desc = "Enable to hide app when there are no earthquakes to display.",
                 icon = "eyeSlash",
-                default = False,
+                default = DEFAULT_HIDE_WHEN_EMPTY,
+            ),
+            schema.Dropdown(
+                id = "map_brightness",
+                name = "Map Layer Brightness",
+                desc = "Set the brightness of the map layer from 0 to 100%.",
+                icon = "sun",
+                options = [
+                    schema.Option(display = "  0%", value = "0.00"),
+                    schema.Option(display = "  5%", value = "0.05"),
+                    schema.Option(display = " 10%", value = "0.10"),
+                    schema.Option(display = " 15%", value = "0.15"),
+                    schema.Option(display = " 20%", value = "0.20"),
+                    schema.Option(display = " 25%", value = "0.25"),
+                    schema.Option(display = " 30%", value = "0.30"),
+                    schema.Option(display = " 35%", value = "0.35"),
+                    schema.Option(display = " 40%", value = "0.40"),
+                    schema.Option(display = " 45%", value = "0.45"),
+                    schema.Option(display = " 50%", value = "0.50"),
+                    schema.Option(display = " 55%", value = "0.55"),
+                    schema.Option(display = " 60%", value = "0.60"),
+                    schema.Option(display = " 65%", value = "0.65"),
+                    schema.Option(display = " 70%", value = "0.70"),
+                    schema.Option(display = " 75%", value = "0.75"),
+                    schema.Option(display = " 80%", value = "0.80"),
+                    schema.Option(display = " 85%", value = "0.85"),
+                    schema.Option(display = " 90%", value = "0.90"),
+                    schema.Option(display = " 95%", value = "0.95"),
+                    schema.Option(display = "100%", value = "1.00"),
+                ],
+                default = DEFAULT_MAP_BRIGHTNESS,
             ),
             schema.Dropdown(
                 id = "mag_filter",
@@ -354,14 +420,14 @@ def get_schema():
                     schema.Option(display = "6", value = "6"),
                     schema.Option(display = "7", value = "7"),
                 ],
-                default = "4",
+                default = DEFAULT_MAG_FILTER,
             ),
             schema.Text(
                 id = "time_filter_duration",
                 name = "Duration Filter",
                 desc = "Duration in specified units to filter.",
                 icon = "clock",
-                default = "2",
+                default = DEFAULT_TIME_FILTER_DURATION,
             ),
             schema.Dropdown(
                 id = "time_filter_units",
@@ -374,42 +440,42 @@ def get_schema():
                     schema.Option(display = "Minute(s)", value = "minutes"),
                     schema.Option(display = "Second(s)", value = "seconds"),
                 ],
-                default = "days",
+                default = DEFAULT_TIME_FILTER_UNITS,
             ),
             schema.Toggle(
                 id = "include_earthquake",
                 name = "Include Earthquakes",
                 desc = "Include earthquake events in display.",
                 icon = "houseCrack",
-                default = True,
+                default = DEFAULT_INCLUDE_EARTHQUAKE,
             ),
             schema.Toggle(
                 id = "include_icequake",
                 name = "Include Ice Quakes",
                 desc = "Include ice quake events in display. (US Only)",
                 icon = "icicles",
-                default = True,
+                default = DEFAULT_INCLUDE_ICEQUAKE,
             ),
             schema.Toggle(
                 id = "include_quarry",
                 name = "Include Quarry Blasts",
                 desc = "Include quarry blasting events in display. (US Only)",
                 icon = "hillRockslide",
-                default = True,
+                default = DEFAULT_INCLUDE_QUARRY,
             ),
             schema.Toggle(
                 id = "include_explosion",
                 name = "Include Explosions",
                 desc = "Include explosion events in display. (US Only)",
                 icon = "explosion",
-                default = True,
+                default = DEFAULT_INCLUDE_EXPLOSION,
             ),
             schema.Toggle(
                 id = "include_other",
                 name = "Include Other Events",
                 desc = "Include other, unspecified, events in display. (US Only)",
                 icon = "question",
-                default = True,
+                default = DEFAULT_INCLUDE_OTHER,
             ),
             schema.Dropdown(
                 id = "map_center_id",
@@ -421,7 +487,7 @@ def get_schema():
                     schema.Option(display = "Date Line", value = "Date Line"),
                     schema.Option(display = "Tidbyt Location", value = "Tidbyt Location"),
                 ],
-                default = "Prime Meridian",
+                default = DEFAULT_MAP_CENTER_ID,
             ),
             schema.Generated(
                 id = "location_option",
