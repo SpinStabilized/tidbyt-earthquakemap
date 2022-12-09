@@ -1,7 +1,7 @@
 """
 Applet: Earthquake Map
 Summary: Map of global earthquakes
-Description: Display a map of earthquakes based on USGS data. (v0.1.2)
+Description: Display a map of earthquakes based on USGS data. (v0.2.0)
 Author: Brian McLaughlin (SpinStabilized)
 """
 
