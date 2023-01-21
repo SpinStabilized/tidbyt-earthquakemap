@@ -142,12 +142,16 @@ def get_usgs_data(magnitude_filter = None, time_filter = None, type_filter = Non
                 ),
                 float(event["properties"]["mag"]),
                 time.from_timestamp(int(event["properties"]["time"] // 1000)),  # convert from ms to seconds
-                event["properties"]["type"],
+                event["properties"]["type"].lower(),
             ]
 
             if new_event[1] >= magnitude_filter and \
                current_time - new_event[2] <= time_filter and \
-               (type_filter == None or type_filter[new_event[3]]):
+               (
+                type_filter == None or \
+                (type_filter["other"] and new_event[3] not in type_filter.keys()) or \
+                (new_event[3] in type_filter.keys() and type_filter[new_event[3]])
+               ):
                 events.append(new_event)
 
     events = sorted(events, key = lambda item: item[2])
@@ -363,7 +367,7 @@ def main(config):
         "ice quake": config.bool("include_icequake", DEFAULT_INCLUDE_ICEQUAKE),
         "quarry blast": config.bool("include_quarry", DEFAULT_INCLUDE_QUARRY),
         "explosion": config.bool("include_explosion", DEFAULT_INCLUDE_EXPLOSION),
-        "other event": config.bool("include_other", DEFAULT_INCLUDE_OTHER),
+        "other": config.bool("include_other", DEFAULT_INCLUDE_OTHER),
     }
     map_brightness = float(config.get("map_brightness", DEFAULT_MAP_BRIGHTNESS))
 
