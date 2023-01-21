@@ -148,9 +148,9 @@ def get_usgs_data(magnitude_filter = None, time_filter = None, type_filter = Non
             if new_event[1] >= magnitude_filter and \
                current_time - new_event[2] <= time_filter and \
                (
-                type_filter == None or \
-                (type_filter["other"] and new_event[3] not in type_filter.keys()) or \
-                (new_event[3] in type_filter.keys() and type_filter[new_event[3]])
+                   type_filter == None or
+                   (type_filter["other"] and new_event[3] not in type_filter.keys()) or
+                   (new_event[3] in type_filter.keys() and type_filter[new_event[3]])
                ):
                 events.append(new_event)
 
