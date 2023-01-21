@@ -265,7 +265,7 @@ def pixel_shift(x, center_longitude = 0):
     if new_x > 63:
         new_x = new_x - 64
     if new_x < 0:
-        new_x = 64 - new_x
+        new_x = 64 + new_x
     return new_x
 
 #-------------------------------------------------------------------------------
