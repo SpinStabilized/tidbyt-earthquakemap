@@ -308,7 +308,7 @@ def pixel(x, y, color, alpha = 1.0):
         child = render.Box(width = 1, height = 1, color = color),
     )
 
-def blink_pixel(x, y, color_on, color_off = "#000000"):
+def blink_pixel(x, y, color_on, color_off = "#000000FF"):
     """Pixel by pixel drawing for Tidbyt, a blinking pixel
 
     Accepts a pixel coordinate as x and y integers on the Tidbyt display as well
@@ -401,14 +401,10 @@ def main(config):
 
         last_event = earthquake_events[-1]
         x, y = map_projection(last_event[0][0], last_event[0][1])
-        if WORLD_MAP_ARRAY[y][x]:
-            blink_off = "#ffffff" + uint8_to_hex(int(map_brightness * 255))
-        else:
-            blink_off = "#000000"
         x = pixel_shift(x, map_center)
         blink_on = mag_to_color(last_event[1])
         render_stack.append(
-            blink_pixel(x, y, blink_on, blink_off),
+            blink_pixel(x, y, blink_on),
         )
 
         return render.Root(
