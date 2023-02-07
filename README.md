@@ -6,7 +6,7 @@
 ## Description
 Displays global earthquake data for, up to, the last 30 days. Applet preferences allow the user to filter the display on a minimum earthquake magnitude and on different time scales. Additionally, the user can select the central meredian of the map to be on the Prime Merdian, International Date Line, or the user's home location.
 
-![Earthquake Map for Tidbyt](earthquake_map.gif)
+![Earthquake Map for Tidbyt][app-gif]
 
 Check out the [Tidybt][tidbyt-url] for an awesome information display for your home. If you are intereasted in developing for the Tidbyt, check out the [Tidbyt Developers Page][tidbyt-dev-url].
 
@@ -64,3 +64,4 @@ Project Link: [https://github.com/SpinStabilized/tidbyt-earthquakemap_dev][repos
 [tidbyt-lic-url]: https://github.com/tidbyt/community/blob/main/docs/CLA.md
 [tidbyt-community-repo]:[https://github.com/tidbyt/community]
 [usgs-feed-url]: https://earthquake.usgs.gov/earthquakes/feed/v1.0/geojson.php
+[app-gif]: https://github.com/SpinStabilized/tidbyt-earthquakemap/raw/main/earthquake_map.gif

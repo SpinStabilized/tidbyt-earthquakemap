@@ -1,0 +1,27 @@
+# Define Standard EOL #
+#######################
+
+# Git Files
+.gitattributes text eol=lf
+.gitignore text eol=lf
+
+# GitHub Specific Files
+CODEOWNERS text eol=lf
+
+# Tidbyt Source
+*.star text eol=lf
+
+# Data Files
+*.json text eol=lf
+*.md text eol=lf
+*.yaml text eol=lf
+
+# Python Related Files
+*.py text eol=lf
+Pipfile text eol=lf
+Pipfile.lock text eol=lf
+
+# Binary Files #
+################
+*.gif binary
+*.webp binary
