@@ -64,4 +64,4 @@ Project Link: [https://github.com/SpinStabilized/tidbyt-earthquakemap_dev][repos
 [tidbyt-lic-url]: https://github.com/tidbyt/community/blob/main/docs/CLA.md
 [tidbyt-community-repo]:[https://github.com/tidbyt/community]
 [usgs-feed-url]: https://earthquake.usgs.gov/earthquakes/feed/v1.0/geojson.php
-[app-gif]: https://github.com/SpinStabilized/tidbyt-earthquakemap/raw/main/earthquake_map.gif
+[app-gif]: https://raw.githubusercontent.com/SpinStabilized/tidbyt-earthquakemap/main/earthquake_map.gif
