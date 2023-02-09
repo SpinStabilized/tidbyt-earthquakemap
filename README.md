@@ -8,6 +8,43 @@ Displays global earthquake data for, up to, the last 30 days. Applet preferences
 
 ![Earthquake Map for Tidbyt][app-gif]
 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## Color Code
+
+The following colors are used to represent different magnitudes in the display:
+
+<table>
+    <tr>
+        <td bgcolor="#00b5b8"> </td><td>0</td>
+    </tr>
+    <tr>
+        <td bgcolor="#bf40bf"> </td><td>1</td>
+    </tr>
+    <tr>
+        <td bgcolor="#08e8de"> </td><td>2</td>
+    </tr>
+    <tr>
+        <td bgcolor="#0000ff"> </td><td>3</td>
+    </tr>
+    <tr>
+        <td bgcolor="#00ff00"> </td><td>4</td>
+    </tr>
+    <tr>
+        <td bgcolor="#fff000"> </td><td>5</td>
+    </tr>
+    <tr>
+        <td bgcolor="#ffaa1d"> </td><td>6</td>
+    </tr>
+    <tr>
+        <td bgcolor="#ff0000"> </td><td>7+</td>
+    </tr>
+</table>
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## About Tidbyt
+
 Check out the [Tidybt][tidbyt-url] for an awesome information display for your home. If you are intereasted in developing for the Tidbyt, check out the [Tidbyt Developers Page][tidbyt-dev-url].
 
 [Tidbyt][tidbyt-dev-url] has a process where a contributor forks the community development repository, creates a branch in the contributor's own fork, and then runs a pull request against their development branch. I am maintaining development in this repository and then copying code that is ready into a branch of the fork for the pull request.
