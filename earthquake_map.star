@@ -395,7 +395,7 @@ def main(config):
         time_filter = time_filter,
         type_filter = type_filter,
     )
-    
+
     earthquake_events = sorted(earthquake_events, key = lambda item: item[2])
     last_event = earthquake_events[-1]
     if magnitude_sorting:
@@ -405,13 +405,13 @@ def main(config):
         render_stack = [render_map(WORLD_MAP_ARRAY, map_center, map_brightness)]
         if len(earthquake_events) > 1:
             for event in earthquake_events[:-1]:
-                x, y = map_projection(event[0][0], event[0][1], map_center=map_center)
+                x, y = map_projection(event[0][0], event[0][1], map_center = map_center)
                 render_stack.append(
                     pixel(x, y, mag_to_color(event[1])),
                 )
 
             # last_event = earthquake_events[-1]
-            x, y = map_projection(last_event[0][0], last_event[0][1], map_center=map_center)
+            x, y = map_projection(last_event[0][0], last_event[0][1], map_center = map_center)
             blink_on = mag_to_color(last_event[1])
             render_stack.append(
                 blink_pixel(x, y, blink_on),
