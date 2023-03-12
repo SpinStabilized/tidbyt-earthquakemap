@@ -401,7 +401,7 @@ def main(config):
     )
 
     earthquake_events = sorted(earthquake_events, key = lambda item: item[2])
-    last_event = earthquake_events[-1]
+    last_event = earthquake_events[-1] if earthquake_events else None
     if magnitude_sorting:
         earthquake_events = sorted(earthquake_events, key = lambda item: item[1])
 
